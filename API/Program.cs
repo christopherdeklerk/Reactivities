@@ -15,6 +15,12 @@ builder.Services.AddDbContext<DataContext>(opt =>
 {
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddCors(opt => {
+    opt.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+    });
+}); // CDK20241002 - Added the CORS policy to allow our app to communicate on the browser
 
 var app = builder.Build();
 
@@ -24,6 +30,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("CorsPolicy"); // CDK20241002 - Very important to USE the CorsPolicy we specified.
 
 app.UseAuthorization(); // CDK20240927 No Authorisation yet, so this will do nothing.
 
