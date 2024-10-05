@@ -1,3 +1,4 @@
+using API.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -6,21 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// CDK20240928 ADDED - You need to specify the DbContext and what Database you are using. So we are physically setting up this DefaultConnection in the appsettings.Development.json file.
-builder.Services.AddDbContext<DataContext>(opt => 
-{
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
-builder.Services.AddCors(opt => {
-    opt.AddPolicy("CorsPolicy", policy =>
-    {
-        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
-    });
-}); // CDK20241002 - Added the CORS policy to allow our app to communicate on the browser
+builder.Services.AddApplicationServices(builder.Configuration); // CDK20241005 - Only takes in one parameter, as we are extending on the first (the this)
 
 var app = builder.Build();
 
@@ -32,9 +19,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("CorsPolicy"); // CDK20241002 - Very important to USE the CorsPolicy we specified.
-
 app.UseAuthorization(); // CDK20240927 No Authorisation yet, so this will do nothing.
-
 app.MapControllers(); // CDK20240927 Registers the endpoints of the Controllers
 
 // CDK20240928 - ADDED This "using" scope states that when we are finished with this service it will be completely destroyed and cleaned up.
