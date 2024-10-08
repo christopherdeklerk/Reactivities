@@ -5,11 +5,12 @@ import { ChangeEvent, useState } from "react";
 interface IActivityFormProps {
     activity: Activity | undefined,
     closeForm: () => void,
-    createOrEdit: (activity: Activity) => void
+    createOrEdit: (activity: Activity) => void,
+    submitting: boolean
 }
 
 // CDK20241006 - Clearing attribute can be used to clear any previous floats and make everything look great. This fixes the buttons popping out issue.
-export default function ActivityForm({ activity: selectedActivity, closeForm, createOrEdit }: IActivityFormProps) {
+export default function ActivityForm({ activity: selectedActivity, closeForm, createOrEdit, submitting }: IActivityFormProps) {
 
     const initialState = selectedActivity ?? {
         id: '',
@@ -42,10 +43,10 @@ export default function ActivityForm({ activity: selectedActivity, closeForm, cr
                 <Form.Input placeholder='Title' value={activity.title} name='title' />
                 <Form.TextArea placeholder='Description' value={activity.description} name='description' />
                 <Form.Input placeholder='Category' value={activity.category} name='category' />
-                <Form.Input placeholder='Date' value={activity.date} name='date' />
+                <Form.Input type='date' placeholder='Date' value={activity.date} name='date' />
                 <Form.Input placeholder='City' value={activity.city} name='city' />
                 <Form.Input placeholder='Venue' value={activity.venue} name='venue' />
-                <Button floated='right' positive type='submit' content='Submit' />
+                <Button loading={submitting} floated='right' positive type='submit' content='Submit' />
                 <Button onClick={closeForm} floated='right' type='submit' content='Cancel' />
             </Form>
         </Segment>

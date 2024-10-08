@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react'
 import './styles.css'
-import axios from 'axios';
 import { Container } from 'semantic-ui-react';
 import { Activity } from '../models/activity';
 import NavBar from './NavBar';
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard';
-import {v4 as uuid} from 'uuid'; // CDK20241006 - This doesn't have a typescript definition file. Check the error and follow the recommendations.
+import { v4 as uuid } from 'uuid'; // CDK20241006 - This doesn't have a typescript definition file. Check the error and follow the recommendations.
+import agent from '../api/agent';
+import LoadingComponent from './LoadingComponent';
 
 function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | undefined>(undefined);
   const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    axios.get<Activity[]>('http://localhost:5000/api/activities')
-      .then(response => {
-        setActivities(response.data);
+    agent.Activities.list().then(response => {
+      // CDK20241007 - Nasty fix for handling DateTimes in js, but this illustrates intercepting the request and doing something with the response before passing on.
+      let activities: Activity[] = [];
+      response.forEach(activity => {
+        activity.date = activity.date.split('T')[0];
+        activities.push(activity);
       })
+      setActivities(activities);
+      setLoading(false);
+    })
   }, [])
 
   function handleSelectActivity(id: string) {
@@ -38,21 +47,40 @@ function App() {
 
   // CDK20241006 On the ActivityDashboard - passing down the function and the state. Temp function, as nothing is actually being saved to the db here. There's no persistence.
   function handleCreateOrEditActivity(activity: Activity) {
-    activity.id
-      // CDK20241006 We have an id so the activity exists. Filter out of the original list and add the changed entity on to the end.
-      ? setActivities([...activities.filter(x => x.id !== activity.id), activity])
-      // CDK20241006 New activity, just add. Use uuid to generate a new Guid. Lots of AWESOME spread operator functionality taking place.
-      : setActivities([...activities, {...activity, id: uuid()}]);
-      setEditMode(false);
-      setSelectedActivity(activity);
+    setSubmitting(true);
+    if (activity.id) {
+      agent.Activities.update(activity).then(() => {
+        // CDK20241006 We have an id so the activity exists. Filter out of the original list and add the changed entity on to the end.
+        setActivities([...activities.filter(x => x.id !== activity.id), activity]);
+        setSelectedActivity(activity);
+        setEditMode(false);
+        setSubmitting(false);
+      })
+    } else {
+      // CDK20241006 New activity, just add. Use uuid to generate a new Guid. Lots of AWESOME spread operator functionality taking place. 
+      // You can't make this neater, these properties are all getting set in the promise, so are required to be set within. Setting externally doesn't work.    
+      activity.id = uuid();
+      agent.Activities.create(activity).then(() => {
+        setActivities([...activities, activity]);
+        setSelectedActivity(activity);
+        setEditMode(false);
+        setSubmitting(false);
+      })
+    }
   }
 
   function handleDeleteActivity(id: string) {
-    setActivities([...activities.filter(x => x.id !== id)]);
+    setSubmitting(true);
+    agent.Activities.delete(id).then(() => {
+      setActivities([...activities.filter(x => x.id !== id)]);
+      setSubmitting(false);
+    })    
   }
 
   // CDK20241006 Container always going to give you nice padding - we need the marginTop as we are using a 'fixed' NavBar, so this overwrites some of our other display.
   // CDK20241006 On the ActivityDashboard - passing down the function and the state
+  if (loading) return <LoadingComponent content={'Loading app'} />
+
   return (
     <>
       <NavBar
@@ -69,6 +97,7 @@ function App() {
           closeForm={handleFormClose}
           createOrEdit={handleCreateOrEditActivity}
           deleteActivity={handleDeleteActivity}
+          submitting={submitting}
         />
       </Container>
     </>

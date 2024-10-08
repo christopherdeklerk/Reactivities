@@ -1,14 +1,23 @@
 import { Button, Item, Label, Segment } from "semantic-ui-react";
 import { Activity } from "../../../app/models/activity"
+import { SyntheticEvent, useState } from "react";
 
 interface IActivityListProps {
     activities: Activity[];
     selectActivity: (id: string) => void,
-    deleteActivity: (id: string) => void
+    deleteActivity: (id: string) => void,
+    submitting: boolean
 }
 
 // CDK20241006 - divided just adds the nice division between the groups. Remember to add a key when you are looping.
-export default function ActivityList({ activities, selectActivity, deleteActivity }: IActivityListProps) {
+export default function ActivityList({ activities, selectActivity, deleteActivity, submitting }: IActivityListProps) {
+const [target, setTarget] = useState('');
+
+function handleActivityDelete(e: SyntheticEvent<HTMLButtonElement>, id: string) {
+    setTarget(e.currentTarget.name);
+    deleteActivity(id);
+}
+
     return (
         <Segment>
             <Item.Group divided>
@@ -26,7 +35,9 @@ export default function ActivityList({ activities, selectActivity, deleteActivit
                                     onClick={() => selectActivity(activity.id)}
                                     floated='right' content='View' color='blue' />
                                 <Button
-                                    onClick={() => deleteActivity(activity.id)}
+                                    name={activity.id}
+                                    onClick={(e) => handleActivityDelete(e, activity.id)}
+                                    loading={submitting && target === activity.id}
                                     floated='right' content='Delete' color='red' />
                                 <Label basic content={activity.category} />
                             </Item.Extra>
