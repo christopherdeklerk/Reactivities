@@ -1,16 +1,12 @@
 import { Button, Form, Segment } from "semantic-ui-react";
-import { Activity } from "../../../app/models/activity";
 import { ChangeEvent, useState } from "react";
-
-interface IActivityFormProps {
-    activity: Activity | undefined,
-    closeForm: () => void,
-    createOrEdit: (activity: Activity) => void,
-    submitting: boolean
-}
+import { useStore } from "../../../app/stores/store";
+import { observer } from "mobx-react-lite";
 
 // CDK20241006 - Clearing attribute can be used to clear any previous floats and make everything look great. This fixes the buttons popping out issue.
-export default function ActivityForm({ activity: selectedActivity, closeForm, createOrEdit, submitting }: IActivityFormProps) {
+export default observer (function ActivityForm() {
+    const {activityStore} = useStore()
+    const {selectedActivity, closeForm, createActivity, updateActivity, loading} = activityStore;
 
     const initialState = selectedActivity ?? {
         id: '',
@@ -25,7 +21,7 @@ export default function ActivityForm({ activity: selectedActivity, closeForm, cr
     const [activity, setActivity] = useState(initialState);
 
     function handleSubmit() {
-        createOrEdit(activity);
+        activity.id ? updateActivity(activity) : createActivity(activity);
     }
 
     // CDK20241006 - We need to track these changes in the Form Input - through the onChange handler of the form.
@@ -46,9 +42,9 @@ export default function ActivityForm({ activity: selectedActivity, closeForm, cr
                 <Form.Input type='date' placeholder='Date' value={activity.date} name='date' />
                 <Form.Input placeholder='City' value={activity.city} name='city' />
                 <Form.Input placeholder='Venue' value={activity.venue} name='venue' />
-                <Button loading={submitting} floated='right' positive type='submit' content='Submit' />
+                <Button loading={loading} floated='right' positive type='submit' content='Submit' />
                 <Button onClick={closeForm} floated='right' type='submit' content='Cancel' />
             </Form>
         </Segment>
     )
-}
+});

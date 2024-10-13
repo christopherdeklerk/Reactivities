@@ -1,10 +1,8 @@
 import { Button, Container, Menu } from "semantic-ui-react";
+import { useStore } from "../stores/store";
 
-interface INavBarProps {
-    openForm: () => void
-}
-
-export default function NavBar({openForm} : INavBarProps) {
+export default function NavBar() {
+    const {activityStore} = useStore();
     return (
         // CDK20241006 Menu inverted for dark color and fixed to the top. Container used for some nice padding.
         // CDK20241006 Three Menu Items - one after the other. Reactivities, Activities and a create activity button.
@@ -17,7 +15,7 @@ export default function NavBar({openForm} : INavBarProps) {
                 </Menu.Item>
                 <Menu.Item name='Activities' />
                 <Menu.Item>
-                    <Button onClick={openForm} positive content='Create Activity' />
+                    <Button onClick={() => activityStore.openForm()} positive content='Create Activity' />
                 </Menu.Item>
             </Container>
         </Menu>
