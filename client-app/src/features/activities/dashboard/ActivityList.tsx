@@ -2,6 +2,7 @@ import { Button, Item, Label, Segment } from "semantic-ui-react";
 import { useState } from "react";
 import { useStore } from "../../../app/stores/store";
 import { observer } from "mobx-react-lite";
+import { Link } from "react-router-dom";
 
 // CDK20241006 - divided just adds the nice division between the groups. Remember to add a key when you are looping.
 export default observer(function ActivityList() {
@@ -31,7 +32,7 @@ export default observer(function ActivityList() {
                             </Item.Description>
                             <Item.Extra>
                                 <Button
-                                    onClick={() => activityStore.selectActivity(activity.id)}
+                                    as={Link} to={`/activities/${activity.id}`}
                                     floated='right' content='View' color='blue' />
                                 <Button
                                     name={activity.id}
