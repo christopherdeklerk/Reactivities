@@ -1,3 +1,4 @@
+using Application.Core;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,5 +14,18 @@ namespace API.Controllers
 
         // CDK20241004 And populate it with the IMediator Service.
         protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetService<IMediator>();
+
+        // CDK20241020 Protected - only need this available in this class and any derived classes.
+        protected ActionResult HandleResult<T>(Result<T> result)
+        {
+            if (result == null) return NotFound();
+            if (result.IsSuccess) {
+                if (result.Value == null) {
+                    return NotFound();       
+                }
+                return Ok(result.Value);
+            }    
+            return BadRequest(result.Error);
+        }
     }
 }

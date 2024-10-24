@@ -1,5 +1,7 @@
 using Application.Activities;
 using Application.Core;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -29,6 +31,10 @@ namespace API.Extensions
             }); // CDK20241002 - Added the CORS policy to allow our app to communicate on the browser
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(List.Handler).Assembly)); // CDK20241004 - Added Mediatr - we had to register just one Handler, so it knows where to get the rest.
             services.AddAutoMapper(typeof(MappingProfiles).Assembly); // CDK20241005 - Add AutoMapper - This will look at the assembly that contains all of our mapping profiles and add those.
+            // CDK20241020 - Services required for FluentValidation
+            services.AddFluentValidationAutoValidation();
+            // CDK20241020 - Add Validators for the Application assembly. Services are registered and any validators are registered as well.
+            services.AddValidatorsFromAssemblyContaining<Create>();
 
             return services;
         }

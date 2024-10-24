@@ -1,4 +1,4 @@
-using System.Security.Cryptography.X509Certificates;
+using Application.Core;
 using Domain;
 using MediatR;
 using Persistence;
@@ -7,7 +7,8 @@ namespace Application.Activities
 {
     public class Details
     {
-        public class Query : IRequest<Activity>
+        // CDK20241020 Now returning a Result of type Activity
+        public class Query : IRequest<Result<Activity>>
         {
             public Guid Id { get; set; }
 
@@ -17,7 +18,7 @@ namespace Application.Activities
             }
         }
 
-        public class Handler : IRequestHandler<Query, Activity>
+        public class Handler : IRequestHandler<Query, Result<Activity>>
         {
             private readonly DataContext _context;
 
@@ -26,9 +27,13 @@ namespace Application.Activities
                 this._context = context;
             }
 
-            public async Task<Activity> Handle(Query request, CancellationToken cancellationToken)
+            // CDK20241020 Rather return a Result object that will either contain an Activity, or contain Null, 
+            // CDK20241020 so that we can contain the error handling logic in the object themselves rather than the controller.
+            public async Task<Result<Activity>> Handle(Query request, CancellationToken cancellationToken)
             {
-                return await _context.Activities.FindAsync(request.Id);
+                var activity = await _context.Activities.FindAsync(request.Id);
+                
+                return Result<Activity>.Success(activity);
             }
         }
     }

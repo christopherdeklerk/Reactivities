@@ -1,3 +1,4 @@
+using Application.Core;
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +9,9 @@ namespace Application.Activities
 {
     public class List
     {
-        public class Query : IRequest<List<Activity>> { }
+        public class Query : IRequest<Result<List<Activity>>> { }
 
-        public class Handler : IRequestHandler<Query, List<Activity>>
+        public class Handler : IRequestHandler<Query, Result<List<Activity>>>
         {
             private readonly DataContext _context;
             private readonly ILogger<List> _logger;
@@ -22,7 +23,7 @@ namespace Application.Activities
             }
 
             // CDK20241005 Cancellation Token allows us to cancel a request if it's no longer needed.
-            public async Task<List<Activity>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<List<Activity>>> Handle(Query request, CancellationToken cancellationToken)
             {
                 try
                 {
@@ -38,7 +39,7 @@ namespace Application.Activities
                     _logger.LogInformation("Task was cancelled");
                     throw;
                 }
-                return await _context.Activities.ToListAsync();
+                return Result<List<Activity>>.Success(await _context.Activities.ToListAsync());
             }
         }
     }

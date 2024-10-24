@@ -1,4 +1,5 @@
 using API.Extensions;
+using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -12,12 +13,14 @@ builder.Services.AddApplicationServices(builder.Configuration); // CDK20241005 -
 var app = builder.Build();
 
 // Configure the HTTP request pipeline. CDK20240927 - Middleware. We can do things with requests passing through this pipeline.
+app.UseMiddleware<ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// CDK20241021 Each Request hits each piece of middleware
 app.UseCors("CorsPolicy"); // CDK20241002 - Very important to USE the CorsPolicy we specified.
 app.UseAuthorization(); // CDK20240927 No Authorisation yet, so this will do nothing.
 app.MapControllers(); // CDK20240927 Registers the endpoints of the Controllers
