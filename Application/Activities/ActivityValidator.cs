@@ -3,7 +3,8 @@ using FluentValidation;
 
 namespace Application.Activities
 {
-    // CDK20241020 - Setup neatly to provide validation on the Activity type automatically. So all we have to do is validte the Activity on our objects by setting the validator.
+    // CDK20241020 - Setup neatly to provide validation on the Activity type automatically.
+    // So all we have to do is validate the Activity on our objects by setting the validator.
     public class ActivityValidator : AbstractValidator<Activity>
     {
         public ActivityValidator()
